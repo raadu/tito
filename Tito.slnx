@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Tito.Core/Tito.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Tito.Core.Tests/Tito.Core.Tests.csproj" />
+  </Folder>
+</Solution>

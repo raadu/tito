@@ -1,0 +1,7 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Framework, nullable, etc. come from /Directory.Build.props -->
+  <ItemGroup>
+    <!-- Lets the test project see `internal` members of this library. -->
+    <InternalsVisibleTo Include="Tito.Core.Tests" />
+  </ItemGroup>
+</Project>
