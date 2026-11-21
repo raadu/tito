@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <!-- Registers TitoDbContext with SQL Server + retries, health check and tracing. -->
+    <PackageReference Include="Aspire.Microsoft.EntityFrameworkCore.SqlServer" Version="17.0.0" />
+    <!-- Generates the OpenAPI document (/openapi/v1.json) from our endpoints. -->
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Tito.ServiceDefaults\Tito.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Tito.Infrastructure\Tito.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

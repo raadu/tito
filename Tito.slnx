@@ -1,6 +1,10 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Tito.Api/Tito.Api.csproj" />
+    <Project Path="src/Tito.AppHost/Tito.AppHost.csproj" />
     <Project Path="src/Tito.Core/Tito.Core.csproj" />
+    <Project Path="src/Tito.Infrastructure/Tito.Infrastructure.csproj" />
+    <Project Path="src/Tito.ServiceDefaults/Tito.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Tito.Core.Tests/Tito.Core.Tests.csproj" />
