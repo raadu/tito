@@ -7,6 +7,7 @@
     <Project Path="src/Tito.ServiceDefaults/Tito.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Tito.Api.Tests/Tito.Api.Tests.csproj" />
     <Project Path="tests/Tito.Core.Tests/Tito.Core.Tests.csproj" />
   </Folder>
 </Solution>

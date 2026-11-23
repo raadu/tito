@@ -11,19 +11,19 @@ public class EmployeeTests
     public void Constructor_normalizes_code_and_name()
     {
         // Arrange + Act
-        var employee = new Employee("  e-01 ", "  Jane    Doe ", Now);
+        var employee = new Employee("  e-01 ", "  Abdul    Basit ", Now);
 
         // Assert
         Assert.Equal("E-01", employee.EmployeeCode);
-        Assert.Equal("Jane Doe", employee.FullName);
+        Assert.Equal("Abdul Basit", employee.FullName);
     }
 
     [Theory]
-    [InlineData("jane doe")]
-    [InlineData("  JANE   DOE  ")]
+    [InlineData("abdul basit")]
+    [InlineData("  ABDUL   BASIT  ")]
     public void HasName_ignores_case_and_spacing(string typed)
     {
-        var employee = new Employee("E-01", "Jane Doe", Now);
+        var employee = new Employee("E-01", "Abdul Basit", Now);
 
         Assert.True(employee.HasName(typed));
     }
@@ -31,13 +31,13 @@ public class EmployeeTests
     [Fact]
     public void HasName_is_false_for_a_different_person()
     {
-        var employee = new Employee("E-01", "Jane Doe", Now);
+        var employee = new Employee("E-01", "Abdul Basit", Now);
 
-        Assert.False(employee.HasName("John Smith"));
+        Assert.False(employee.HasName("Someone Else"));
     }
 
     [Theory]
-    [InlineData("", "Jane")]                    // missing code
+    [InlineData("", "Abdul")]                    // missing code
     [InlineData("E-01", "   ")]                 // missing name
     [InlineData("E-0123456789012345678", "J")]  // code longer than 20
     public void Constructor_rejects_invalid_input(string code, string name)
