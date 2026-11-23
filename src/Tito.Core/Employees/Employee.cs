@@ -39,7 +39,7 @@ public sealed class Employee
         return value;
     }
 
-    /// <summary>Trims and collapses inner whitespace: "  Jane   Doe " -> "Jane Doe".</summary>
+    /// <summary>Trims and collapses inner whitespace: "  Abdul   Basit " -> "Abdul Basit".</summary>
     public static string NormalizeName(string? name)
     {
         var parts = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

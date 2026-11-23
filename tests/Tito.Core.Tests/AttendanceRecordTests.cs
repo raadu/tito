@@ -10,7 +10,7 @@ public class AttendanceRecordTests
     private static readonly DateOnly Today = new(2026, 11, 20);
 
     private static AttendanceRecord NewRecord() =>
-        new(new Employee("E-01", "Jane Doe", TimeIn), Today, TimeIn, "  on site  ");
+        new(new Employee("E-01", "Abdul Basit", TimeIn), Today, TimeIn, "  on site  ");
 
     [Fact]
     public void No_record_means_absent() =>

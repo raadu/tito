@@ -1,40 +1,96 @@
+using System.Text.Json.Serialization;
+using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Scalar.AspNetCore;
+using Tito.Api.Configuration;
+using Tito.Api.ErrorHandling;
+using Tito.Api.Features.Attendance;
+using Tito.Core.Common;
 using Tito.Infrastructure.Persistence;
 
-// ---- 1. Register services (dependency injection container) ----
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();                          // OpenTelemetry, health checks (from Tito.ServiceDefaults)
-builder.AddSqlServerDbContext<TitoDbContext>("tito");  // reads ConnectionStrings:tito, adds retries + tracing
+// ======================= 1. SERVICES (dependency injection) =======================
 
-builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.AddServiceDefaults();                          // OpenTelemetry + /health checks
+builder.AddSqlServerDbContext<TitoDbContext>("tito");  // DbContext (scoped) + retries + DB health check
+
+// ---- Options: typed, validated settings. App fails to start if they're invalid. ----
+builder.Services.AddOptions<CompanyOptions>()
+    .BindConfiguration(CompanyOptions.Section)
+    .ValidateDataAnnotations()
+    .Validate(o => TimeZoneInfo.TryFindSystemTimeZoneById(o.TimeZone, out _),
+        "Company:TimeZone is not a known time zone id (use IANA ids like Europe/Stockholm).")
+    .ValidateOnStart();
+builder.Services.AddOptions<RateLimitOptions>()
+    .BindConfiguration(RateLimitOptions.Section)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+// ---- Time: one clock for the whole app. Tests replace TimeProvider with a fake. ----
+builder.Services.AddSingleton(TimeProvider.System);
+builder.Services.AddSingleton(sp => new CompanyClock(
+    sp.GetRequiredService<TimeProvider>(),
+    TimeZoneInfo.FindSystemTimeZoneById(sp.GetRequiredService<IOptions<CompanyOptions>>().Value.TimeZone)));
+
+// ---- Application services ----
+builder.Services.AddScoped<AttendanceService>();       // scoped = one per HTTP request (like DbContext)
+
+// ---- Web API ----
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());              // enums as "Working", not 1
+        o.JsonSerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow; // unknown fields -> 400
+    });
+builder.Services.AddProblemDetails();                  // standard error JSON for all errors
+builder.Services.AddExceptionHandler<DomainExceptionHandler>();
+builder.Services.AddOpenApi();                         // builds /openapi/v1.json from controllers + XML comments
+
+// ---- CORS: which browser origins may call us (the Angular app). ----
+var corsOrigins = builder.Configuration.GetSection(CorsOptions.Section).Get<CorsOptions>()?.AllowedOrigins ?? [];
+builder.Services.AddCors(o => o.AddDefaultPolicy(policy => policy
+    .WithOrigins(corsOrigins)
+    .WithMethods("GET", "POST")
+    .AllowAnyHeader()));
+
+// ---- Rate limiting: N write requests per minute per client IP. ----
+builder.Services.AddRateLimiter(o =>
+{
+    o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    o.AddPolicy(RateLimitPolicies.Writes, http =>
+    {
+        var limit = http.RequestServices.GetRequiredService<IOptions<RateLimitOptions>>().Value.WritesPerMinute;
+        var clientIp = http.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = limit,
+            Window = TimeSpan.FromMinutes(1),
+        });
+    });
+});
 
 var app = builder.Build();
 
-// ---- 2. Development-only setup ----
+// ======================= 2. MIDDLEWARE PIPELINE (order matters) =======================
+
+app.UseExceptionHandler();                             // outermost: catches errors from everything below
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();                                  // serves /openapi/v1.json
+    app.MapOpenApi();                                  // GET /openapi/v1.json
+    app.MapScalarApiReference();                       // GET /scalar  -> interactive API docs
 
-    // Apply pending migrations at startup - convenient locally.
-    // In Azure, the CI/CD pipeline applies them instead (Phase 7).
+    // Apply pending migrations locally. In Azure the pipeline does this (Phase 7).
     await using var scope = app.Services.CreateAsyncScope();
-    var db = scope.ServiceProvider.GetRequiredService<TitoDbContext>();
-    await db.Database.MigrateAsync();
+    await scope.ServiceProvider.GetRequiredService<TitoDbContext>().Database.MigrateAsync();
 }
 
-// ---- 3. HTTP request pipeline (middleware runs in this order) ----
 app.UseHttpsRedirection();
+app.UseCors();
+app.UseRateLimiter();
 app.MapControllers();
 app.MapDefaultEndpoints();                             // /health and /alive
-
-// Temporary Phase 2 check: proves the API can query SQL Server. Removed in Phase 3.
-app.MapGet("/api/db-check", async (TitoDbContext db) => new
-{
-    employees = await db.Employees.CountAsync(),
-    attendanceRecords = await db.AttendanceRecords.CountAsync(),
-    appliedMigrations = await db.Database.GetAppliedMigrationsAsync(),
-});
 
 app.Run();
