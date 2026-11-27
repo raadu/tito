@@ -5,6 +5,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <!-- CS1591 = "missing XML comment": don't force docs on every public member. -->
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Write openapi/v1.json at build time; the Angular app generates its TS client from it. -->
+    <OpenApiDocumentsDirectory>$(MSBuildProjectDirectory)/../../web/tito-web/openapi</OpenApiDocumentsDirectory>
+    <OpenApiGenerateDocumentsOptions>--file-name v1</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +16,11 @@
     <!-- Generates the OpenAPI document (/openapi/v1.json) from our endpoints. -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
     <PackageReference Include="Scalar.AspNetCore" Version="3.2.0" />
+    <!-- Build-time OpenAPI generation (dev-only tool, not shipped with the app). -->
+    <PackageReference Include="Microsoft.Extensions.ApiDescription.Server" Version="10.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

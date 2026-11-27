@@ -1,0 +1,130 @@
+<section class="card">
+  <header class="person">
+    <div class="avatar" aria-hidden="true">{{ initials }}</div>
+    <div class="person__text">
+      <h1 class="person__name">{{ employee.fullName }}</h1>
+      <p class="card__subtitle">ID {{ employee.employeeCode }}</p>
+    </div>
+    <span class="chip" [attr.data-status]="status().status">{{ statusLabel() }}</span>
+  </header>
+
+  <div class="card__body">
+    @switch (step()) {
+      @case ('pick-date') {
+        <p class="section-label">Select today's date</p>
+        <div class="calendar">
+          <mat-calendar
+            [selected]="selectedDate()"
+            (selectedChange)="selectedDate.set($event)"
+            [startAt]="today"
+            [minDate]="today"
+            [maxDate]="today"
+            [dateFilter]="onlyToday"
+          />
+        </div>
+      }
+
+      @case ('details') {
+        <p class="date-row">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.8" />
+            <path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+          </svg>
+          {{ selectedDate() | date: 'EEEE, d MMMM y' }}
+        </p>
+
+        @if (isTimeOut()) {
+          <div class="timer" data-testid="worked-so-far">
+            <span class="timer__label">Worked so far</span>
+            <span class="timer__value">{{ workedSoFar() }}</span>
+            <span class="timer__meta">Timed in at {{ status().timeInUtc | date: 'HH:mm' }}</span>
+          </div>
+        }
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Comment (optional)</mat-label>
+          <textarea matInput [formControl]="comment" rows="3" [maxlength]="commentMax"></textarea>
+          <mat-hint align="end">{{ comment.value.length }} / {{ commentMax }}</mat-hint>
+        </mat-form-field>
+      }
+
+      @case ('done') {
+        <div class="done" data-testid="done">
+          <div class="done__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="32" height="32">
+              <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+
+          @switch (lastAction()) {
+            @case ('time-in') {
+              <h2 class="done__title">Time In recorded</h2>
+              <p class="done__text">
+                You timed in at <strong>{{ status().timeInUtc | date: 'HH:mm' }}</strong>. Have a good day!
+              </p>
+            }
+            @case ('time-out') {
+              <h2 class="done__title">Time Out recorded</h2>
+              <p class="done__text">Great work today. See you next time!</p>
+            }
+            @default {
+              <h2 class="done__title">You're done for today</h2>
+              <p class="done__text">You have already timed in and out today.</p>
+            }
+          }
+
+          @if (status().timeOutUtc) {
+            <dl class="summary">
+              <div>
+                <dt>In</dt>
+                <dd>{{ status().timeInUtc | date: 'HH:mm' }}</dd>
+              </div>
+              <div>
+                <dt>Out</dt>
+                <dd>{{ status().timeOutUtc | date: 'HH:mm' }}</dd>
+              </div>
+              <div>
+                <dt>Total worked</dt>
+                <dd data-testid="total-worked">{{ totalWorked() }}</dd>
+              </div>
+            </dl>
+          }
+
+          <div class="redirect">
+            <p data-testid="redirect">
+              You will be redirected to the home page in {{ secondsLeft() }}
+              {{ secondsLeft() === 1 ? 'second' : 'seconds' }}.
+            </p>
+            <div class="redirect__track" aria-hidden="true">
+              <div class="redirect__fill" [style.width.%]="redirectPercent()"></div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <footer class="card__actions">
+    @switch (step()) {
+      @case ('pick-date') {
+        <button appButton variant="secondary" type="button" (click)="changeEmployee()">Back</button>
+        <button appButton type="button" [disabled]="!selectedDate()" (click)="selectDate()">Select Date</button>
+      }
+      @case ('details') {
+        <button appButton variant="secondary" type="button" (click)="back()" [disabled]="submitting()">Back</button>
+        <button
+          appButton
+          type="button"
+          (click)="submit()"
+          [loading]="submitting()"
+          [disabled]="submitting() || comment.invalid"
+        >
+          {{ isTimeOut() ? 'Time Out' : 'Time In' }}
+        </button>
+      }
+      @case ('done') {
+        <button appButton type="button" (click)="backToHome()">Back to Home</button>
+      }
+    }
+  </footer>
+</section>

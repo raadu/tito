@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -38,12 +39,17 @@ builder.Services.AddSingleton(sp => new CompanyClock(
 builder.Services.AddScoped<AttendanceService>();       // scoped = one per HTTP request (like DbContext)
 
 // ---- Web API ----
-builder.Services.AddControllers()
-    .AddJsonOptions(o =>
-    {
-        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());              // enums as "Working", not 1
-        o.JsonSerializerOptions.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow; // unknown fields -> 400
-    });
+// One JSON setup, applied to BOTH option sets: MVC uses it to (de)serialize controller
+// bodies, and the OpenAPI generator uses the "HTTP" set to describe schemas. If they
+// differ, the published contract lies (e.g. enums documented as integers).
+static void ConfigureJson(JsonSerializerOptions json)
+{
+    json.Converters.Add(new JsonStringEnumConverter());               // enums as "Working", not 1
+    json.UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow; // unknown fields -> 400
+    json.NumberHandling = JsonNumberHandling.Strict;                   // numbers are numbers, never "42"
+}
+builder.Services.ConfigureHttpJsonOptions(o => ConfigureJson(o.SerializerOptions));
+builder.Services.AddControllers().AddJsonOptions(o => ConfigureJson(o.JsonSerializerOptions));
 builder.Services.AddProblemDetails();                  // standard error JSON for all errors
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddOpenApi();                         // builds /openapi/v1.json from controllers + XML comments

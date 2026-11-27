@@ -1,0 +1,91 @@
+// :host = the <button> this component is attached to.
+:host {
+  --btn-bg: var(--mat-sys-primary);
+  --btn-fg: var(--mat-sys-on-primary);
+  --btn-border: transparent;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--tito-space-2);
+  min-height: 48px; // comfortable touch target on phones
+  padding: 0 var(--tito-space-5);
+  border: 1px solid var(--btn-border);
+  border-radius: var(--tito-radius-md);
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font: var(--mat-sys-label-large);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    box-shadow 150ms ease,
+    transform 60ms ease;
+}
+
+:host([data-variant='primary']) {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 8%),
+    0 6px 16px -4px color-mix(in srgb, var(--mat-sys-primary) 45%, transparent);
+}
+
+:host([data-variant='secondary']) {
+  --btn-bg: var(--mat-sys-surface-container-lowest);
+  --btn-fg: var(--mat-sys-on-surface);
+  --btn-border: var(--mat-sys-outline-variant);
+}
+
+:host([data-variant='ghost']) {
+  --btn-bg: transparent;
+  --btn-fg: var(--mat-sys-primary);
+}
+
+:host(:hover:not(:disabled)) {
+  background: color-mix(in srgb, var(--btn-bg) 90%, var(--btn-fg));
+}
+
+:host(:active:not(:disabled)) {
+  transform: translateY(1px);
+}
+
+:host(:focus-visible) {
+  outline: 3px solid color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+  outline-offset: 2px;
+}
+
+:host(:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+  box-shadow: none;
+}
+
+// While loading the button is disabled, but it should not look greyed out.
+:host(.is-loading) {
+  cursor: progress;
+  opacity: 1;
+}
+
+:host(.is-loading) .label {
+  visibility: hidden; // keeps the button's width so it doesn't jump
+}
+
+.spinner {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
