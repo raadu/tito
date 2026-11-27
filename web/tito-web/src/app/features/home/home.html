@@ -1,0 +1,29 @@
+<section class="card">
+  <header class="card__header">
+    <h1 class="card__title">Welcome</h1>
+    <p class="card__subtitle">Enter your employee ID and full name to time in or time out.</p>
+  </header>
+
+  <!-- [formGroup] binds the <form> to the FormGroup in home.ts; (ngSubmit) calls submit(). -->
+  <form class="card__body" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Employee ID</mat-label>
+      <input matInput formControlName="employeeCode" autocomplete="off" autocapitalize="characters" [maxlength]="codeMax" />
+      @if (form.controls.employeeCode.hasError('required')) {
+        <mat-error>Employee ID is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Full name</mat-label>
+      <input matInput formControlName="fullName" autocomplete="name" [maxlength]="nameMax" />
+      @if (form.controls.fullName.hasError('required')) {
+        <mat-error>Full name is required.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="card__actions">
+      <button appButton type="submit" [loading]="loading()" [disabled]="loading()">Continue</button>
+    </div>
+  </form>
+</section>

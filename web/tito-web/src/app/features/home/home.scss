@@ -1,0 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+  max-width: var(--tito-page-width);
+}
+
+.card__actions {
+  margin-top: var(--tito-space-2);
+}

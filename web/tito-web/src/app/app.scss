@@ -1,0 +1,53 @@
+$topbar-height: 64px;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  height: $topbar-height;
+  margin: 0 auto;
+  padding: 0 var(--tito-space-6);
+}
+
+.brand {
+  display: inline-flex;
+  border-radius: var(--tito-radius-md);
+  color: inherit;
+  text-decoration: none;
+
+  &:focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--mat-sys-primary) 40%, transparent);
+    outline-offset: 4px;
+  }
+}
+
+// Phones: the card starts right under the bar. Larger screens: the card sits in the
+// middle of the viewport (bottom padding = bar height, so it's truly centered).
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--tito-space-2) var(--tito-space-4) var(--tito-space-8);
+}
+
+@media (min-width: 600px) {
+  .content {
+    align-items: center;
+    padding: var(--tito-space-6) var(--tito-space-6) calc(#{$topbar-height} + var(--tito-space-6));
+  }
+}
+
+@media (max-width: 599.98px) {
+  .topbar {
+    height: 56px;
+    padding: 0 var(--tito-space-4);
+  }
+}

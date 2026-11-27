@@ -1,0 +1,125 @@
+// Global styles: Material theme, design tokens, page background and the shared card layout.
+// Component-specific styles live next to each component.
+@use '@angular/material' as mat;
+
+html {
+  // Material 3 theme -> defines --mat-sys-* CSS variables (colors, type scale) we use everywhere.
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$violet-palette,
+        tertiary: mat.$cyan-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+
+  // ---- TITO design tokens: every gap/padding is a multiple of 4px. ----
+  --tito-space-1: 4px;
+  --tito-space-2: 8px;
+  --tito-space-3: 12px;
+  --tito-space-4: 16px;
+  --tito-space-5: 20px;
+  --tito-space-6: 24px;
+  --tito-space-8: 32px;
+  --tito-radius-md: 14px;
+  --tito-radius-lg: 24px;
+  --tito-page-width: 440px;
+
+  // Status colors (same meaning on /checkin and, later, the /list board).
+  --tito-working: #12805c;
+  --tito-done: #c2410c;
+  --tito-absent: #52525b;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  color-scheme: light;
+  margin: 0;
+  min-height: 100dvh; // dvh = real visible height on mobile (ignores the browser bar)
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  -webkit-font-smoothing: antialiased;
+  background: var(--mat-sys-surface-container-low);
+}
+
+// Soft brand-colored light behind everything. A fixed pseudo-element (instead of
+// background-attachment: fixed) so it stays smooth on iOS Safari.
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(64rem 40rem at -10% -10%, color-mix(in srgb, var(--mat-sys-primary) 20%, transparent), transparent 70%),
+    radial-gradient(56rem 36rem at 110% 110%, color-mix(in srgb, var(--mat-sys-tertiary) 22%, transparent), transparent 70%),
+    var(--mat-sys-surface-container-low);
+}
+
+// ---------- Card: the one surface every page is built on ----------
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tito-space-6);
+  width: 100%;
+  padding: var(--tito-space-6);
+  background: var(--mat-sys-surface-container-lowest);
+  border: 1px solid color-mix(in srgb, var(--mat-sys-outline-variant) 55%, transparent);
+  border-radius: var(--tito-radius-lg);
+  box-shadow:
+    0 1px 2px rgb(20 10 40 / 4%),
+    0 16px 40px -12px rgb(20 10 40 / 14%);
+}
+
+.card__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tito-space-1);
+}
+
+.card__title {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.card__subtitle {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tito-space-4);
+}
+
+// Buttons share the row equally: big targets on phones, tidy on desktop.
+.card__actions {
+  display: flex;
+  gap: var(--tito-space-3);
+
+  > * {
+    flex: 1 1 0;
+  }
+}
+
+.card mat-form-field {
+  width: 100%;
+}
+
+@media (max-width: 599.98px) {
+  .card {
+    gap: var(--tito-space-5);
+    padding: var(--tito-space-5);
+    border-radius: 20px;
+  }
+}
